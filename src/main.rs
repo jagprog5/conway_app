@@ -7,11 +7,17 @@ fn main() {
     // Log to stdout (if you run with `RUST_LOG=debug`).
     tracing_subscriber::fmt::init();
 
-    let native_options = eframe::NativeOptions::default();
+    let size = Some(eframe::epaint::Vec2 { x: 275.0, y: 275.0 });
+    let options = eframe::NativeOptions {
+        min_window_size: size,
+        max_window_size: size,
+        ..eframe::NativeOptions::default()
+    };
+
     eframe::run_native(
-        "eframe template",
-        native_options,
-        Box::new(|cc| Box::new(eframe_template::TemplateApp::new(cc))),
+        "Conway App!",
+        options,
+        Box::new(|cc| Box::new(conway_app::ConwayApp::new(cc))),
     );
 }
 
@@ -28,7 +34,7 @@ fn main() {
     eframe::start_web(
         "the_canvas_id", // hardcode it
         web_options,
-        Box::new(|cc| Box::new(eframe_template::TemplateApp::new(cc))),
+        Box::new(|cc| Box::new(conway_app::ConwayApp::new(cc))),
     )
     .expect("failed to start eframe");
 }

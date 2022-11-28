@@ -1,14 +1,22 @@
 [package]
-name = "eframe_template"
+name = "conway_app"
 version = "0.1.0"
-authors = ["Emil Ernerfeldt <emil.ernerfeldt@gmail.com>"]
+
+# Emil made the eframe template which this project is built on: https://github.com/emilk/eframe_template
+# Tim made some rustacean improvements to conway logic
+# John made the rest
+authors = ["John Giorshev <johngiorshev@gmail.com>",
+           "Timothy Morland <timothy.john.morland@gmail.com>",
+           "Emil Ernerfeldt <emil.ernerfeldt@gmail.com>"]
+license = "MIT"
 edition = "2021"
 rust-version = "1.60"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-
 [dependencies]
+rand = "0.8.4"
+
 egui = "0.19.0"
 eframe = { version = "0.19.0", features = ["persistence"] }
 
