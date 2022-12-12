@@ -6,7 +6,7 @@ const GRID_SIZE: usize = 16usize;
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(default)]
 pub struct ConwayApp {
-    grid: Grid<GRID_SIZE,GRID_SIZE>,
+    grid: Grid<GRID_SIZE, GRID_SIZE>,
 }
 
 impl Default for ConwayApp {
@@ -39,22 +39,19 @@ impl eframe::App for ConwayApp {
         egui::SidePanel::left("side_panel")
             .resizable(false)
             .show(ctx, |ui| {
-            ui.heading("Controls");
-            if ui.button("Randomize").clicked() {
-                self.grid = Grid::random();
-            }
-            if ui.button("Next").clicked() {
-                self.grid = self.grid.clone().into_iter().next().unwrap();
-            }
-
-        });
+                ui.heading("Controls");
+                if ui.button("Randomize").clicked() {
+                    self.grid = Grid::random();
+                }
+                if ui.button("Next").clicked() {
+                    self.grid = self.grid.clone().into_iter().next().unwrap();
+                }
+            });
 
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.style_mut().override_text_style = Some(egui::TextStyle::Monospace);
-            let grid_display = egui::Label::new(self.grid.to_string())
-                .wrap(false);
+            let grid_display = egui::Label::new(self.grid.to_string()).wrap(false);
             ui.add(grid_display);
         });
-
     }
 }

@@ -1,9 +1,9 @@
-use std::fmt::Display;
 use rand::{thread_rng, Rng};
-use serde::ser::{Serialize, Serializer, SerializeSeq};
-use serde::de::{Deserialize, Deserializer, Visitor, Error};
+use serde::de::{Deserialize, Deserializer, Error, Visitor};
+use serde::ser::{Serialize, SerializeSeq, Serializer};
+use std::fmt::Display;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Grid<const W: usize, const H: usize> {
     cells: [[bool; W]; H],
 }
@@ -14,9 +14,11 @@ pub struct GridIter<const W: usize, const H: usize> {
 
 impl<const W: usize, const H: usize> Grid<W, H> {
     pub fn empty() -> Self {
-        Self { cells: [[false; W]; H] }
+        Self {
+            cells: [[false; W]; H],
+        }
     }
-    
+
     pub fn random() -> Self {
         let mut cells = [[false; W]; H];
         for row in cells.iter_mut() {
@@ -36,7 +38,7 @@ impl<const W: usize, const H: usize> Grid<W, H> {
 
     fn count_active<I>(&self, coords: I) -> usize
     where
-        I: Iterator<Item = (usize, usize)>
+        I: Iterator<Item = (usize, usize)>,
     {
         let mut ret = 0usize;
         for (y, x) in coords {
@@ -88,6 +90,7 @@ impl<const W: usize, const H: usize> Grid<W, H> {
     }
 }
 
+// human readable output displayed in the app
 impl<const W: usize, const H: usize> Display for Grid<W, H> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "/")?;
@@ -144,10 +147,10 @@ impl<const W: usize, const H: usize> Iterator for GridIter<W, H> {
     }
 }
 
+// serde serialization for persistance and storage.
 // serde does not support const generics yet
 // there are packages that help but they don't work for 2d arrays.
 // doing this by hand
-
 impl<const W: usize, const H: usize> Serialize for Grid<W, H> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -173,15 +176,16 @@ impl<'de, const W: usize, const H: usize> Visitor<'de> for GridDeserializer<W, H
     }
 
     fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::SeqAccess<'de>, {
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
         let mut ret = Grid::empty();
         let mut y = 0usize;
         let mut x = 0usize;
 
         while let Some(val) = seq.next_element()? {
             if y == H {
-                return Err(A::Error::custom(format!("too many elements specified")));
+                return Err(A::Error::custom("too many elements specified"));
             }
             ret.cells[y][x] = val;
             x += 1;
@@ -191,7 +195,7 @@ impl<'de, const W: usize, const H: usize> Visitor<'de> for GridDeserializer<W, H
             }
         }
         if x != 0 || y != H {
-            return Err(A::Error::custom(format!("not enough elements specified")))
+            return Err(A::Error::custom("not enough elements specified"));
         }
         Ok(ret)
     }
@@ -203,9 +207,7 @@ impl<'de, const W: usize, const H: usize> Deserialize<'de> for Grid<W, H> {
         D: Deserializer<'de>,
     {
         let visitor = GridDeserializer::<W, H>;
-        return deserializer.deserialize_seq(visitor).map_err(|err| {
-            err
-        });
+        deserializer.deserialize_seq(visitor)
     }
 
     fn deserialize_in_place<D>(deserializer: D, place: &mut Self) -> Result<(), D::Error>
